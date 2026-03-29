@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resiliencia en Juego — Oriente Antioqueño</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Crimson+Pro:ital,wght@0,300;0,400;1,300;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+
+/* ─── TOKENS ─────────────────────────────────────────────────── */
+:root {
+  --ink:    #0F1318;
+  --paper:  #F4F0E8;
+  --dust:   #C9C2B4;
+  --fire:   #C8522A;
+  --moss:   #4A5C45;
+  --sky:    #2C4A7C;
+  --gold:   #D4A843;
+  --cream:  #EDE9DF;
+}
+
+/* ─── RESET ───────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; font-size: 16px; }
+
+body {
+  background: var(--ink);
+  color: var(--paper);
+  font-family: 'Crimson Pro', Georgia, serif;
+  overflow-x: hidden;
+  cursor: crosshair;
+}
+
+/* ─── PROGRESS BAR ────────────────────────────────────────────── */
+#progress-bar {
+  position: fixed;
+  top: 0; left: 0;
+  height: 3px;
+  width: 0%;
+  background: var(--fire);
+  z-index: 9999;
+  transition: width 0.1s linear;
+}
+
+/* ─── NAV ─────────────────────────────────────────────────────── */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 500;
+  padding: 1.2rem 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  mix-blend-mode: difference;
+}
+
+.nav-logo {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--paper);
+  opacity: 0.7;
+}
+
+.nav-links {
+  display: flex;
+  gap: 2rem;
+  list-style: none;
+}
+
+.nav-links a {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--paper);
+  text-decoration: none;
+  opacity: 0.5;
+  transition: opacity 0.3s;
+}
+
+.nav-links a:hover { opacity: 1; }
+
+/* ─── SIDE CHAPTER INDICATOR ──────────────────────────────────── */
+#chapter-track {
+  position: fixed;
+  right: 2.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 400;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.chapter-pip {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  opacity: 0.3;
+  transition: opacity 0.4s;
+}
+
+.chapter-pip.active { opacity: 1; }
+
+.chapter-pip .pip-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--paper);
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateX(8px);
+  transition: all 0.3s;
+}
+
+.chapter-pip:hover .pip-label,
+.chapter-pip.active .pip-label {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.pip-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--dust);
+  flex-shrink: 0;
+  transition: background 0.3s, transform 0.3s;
+}
+
+.chapter-pip.active .pip-dot {
+  background: var(--fire);
+  transform: scale(1.5);
+}
+
+/* ─── SHARED SECTION BASE ─────────────────────────────────────── */
+.chapter {
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+/* ─── CHAPTER 0 — PORTADA ─────────────────────────────────────── */
+#ch0 {
+  background: var(--ink);
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+  padding: 6rem 2rem;
+}
+
+.hero-eyebrow {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--fire);
+  margin-bottom: 2.5rem;
+  opacity: 0;
+  animation: fadeUp 1s 0.3s forwards;
+}
+
+.hero-headline {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(5rem, 14vw, 13rem);
+  line-height: 0.9;
+  color: var(--paper);
+  opacity: 0;
+  animation: fadeUp 1.2s 0.6s forwards;
+  position: relative;
+  z-index: 2;
+}
+
+.hero-headline span {
+  color: var(--fire);
+  display: block;
+}
+
+.hero-sub {
+  font-family: 'Crimson Pro', serif;
+  font-style: italic;
+  font-size: clamp(1.1rem, 2.2vw, 1.5rem);
+  color: var(--dust);
+  max-width: 520px;
+  margin: 2.5rem auto 0;
+  line-height: 1.6;
+  opacity: 0;
+  animation: fadeUp 1s 1s forwards;
+}
+
+.scroll-cue {
+  position: absolute;
+  bottom: 3rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  opacity: 0;
+  animation: fadeUp 1s 1.5s forwards;
+}
+
+.scroll-cue span {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--dust);
+}
+
+.scroll-line {
+  width: 1px;
+  height: 60px;
+  background: linear-gradient(to bottom, var(--dust), transparent);
+  animation: scrollPulse 2s 1.8s infinite;
+}
+
+/* Hero grain overlay */
+#ch0::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity: 0.35;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Big background number */
+.bg-num {
+  position: absolute;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 40vw;
+  color: rgba(255,255,255,0.02);
+  user-select: none;
+  pointer-events: none;
+  line-height: 1;
+  z-index: 0;
+  right: -4vw;
+  bottom: -5vw;
+}
+
+/* ─── CHAPTER 1 — CONTEXTO ────────────────────────────────────── */
+#ch1 {
+  background: var(--paper);
+  color: var(--ink);
+  padding: 8rem 0;
+  flex-direction: column;
+}
+
+.context-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  max-width: 1100px;
+  width: 90%;
+  margin: 0 auto;
+  gap: 4rem;
+  align-items: start;
+}
+
+.context-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--fire);
+  margin-bottom: 1rem;
+}
+
+.context-chapter-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 10rem;
+  line-height: 1;
+  color: var(--dust);
+  opacity: 0.4;
+  margin-top: -1rem;
+}
+
+.context-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(2.5rem, 5vw, 4.5rem);
+  line-height: 1;
+  color: var(--ink);
+  margin-bottom: 1.5rem;
+}
+
+.context-body p {
+  font-size: clamp(1.05rem, 1.5vw, 1.2rem);
+  line-height: 1.8;
+  color: #2a2a2a;
+  margin-bottom: 1.2rem;
+  font-weight: 300;
+}
+
+.stat-row {
+  display: flex;
+  gap: 2.5rem;
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--dust);
+  flex-wrap: wrap;
+}
+
+.stat-item {}
+
+.stat-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 3rem;
+  color: var(--fire);
+  line-height: 1;
+}
+
+.stat-desc {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink);
+  opacity: 0.6;
+  margin-top: 0.3rem;
+  max-width: 120px;
+  line-height: 1.5;
+}
+
+/* ─── CHAPTER 2 — CONFLICTO ───────────────────────────────────── */
+#ch2 {
+  background: var(--ink);
+  padding: 0;
+  min-height: 100vh;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.conflict-hero {
+  width: 100%;
+  min-height: 60vh;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+}
+
+.conflict-img-bg {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #1a0f0a 0%, #2d1a0e 40%, #0f1318 100%);
+  z-index: 0;
+}
+
+/* Animated shapes simulating urban texture */
+.conflict-img-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 40px,
+      rgba(200,82,42,0.04) 40px,
+      rgba(200,82,42,0.04) 41px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 60px,
+      rgba(200,82,42,0.03) 60px,
+      rgba(200,82,42,0.03) 61px
+    );
+}
+
+.conflict-gradient {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 70%;
+  background: linear-gradient(to top, var(--ink) 20%, transparent);
+  z-index: 1;
+}
+
+.conflict-hero-text {
+  position: relative;
+  z-index: 2;
+  padding: 4rem 8%;
+  width: 100%;
+}
+
+.conflict-hero-text h2 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(3rem, 7vw, 6rem);
+  line-height: 1;
+  color: var(--paper);
+}
+
+.conflict-hero-text h2 em {
+  color: var(--fire);
+  font-style: normal;
+}
+
+.conflict-body {
+  width: 90%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 5rem 0 8rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem 5rem;
+  align-items: start;
+}
+
+.conflict-col p {
+  font-size: clamp(1rem, 1.4vw, 1.15rem);
+  line-height: 1.85;
+  color: var(--dust);
+  margin-bottom: 1.2rem;
+}
+
+.conflict-col p strong {
+  color: var(--paper);
+  font-weight: 400;
+}
+
+.pull-quote {
+  border-left: 3px solid var(--fire);
+  padding-left: 1.5rem;
+  margin: 2.5rem 0;
+}
+
+.pull-quote blockquote {
+  font-family: 'Crimson Pro', serif;
+  font-style: italic;
+  font-size: clamp(1.3rem, 2.5vw, 1.8rem);
+  color: var(--paper);
+  line-height: 1.5;
+}
+
+.pull-quote cite {
+  display: block;
+  margin-top: 0.8rem;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--fire);
+  font-style: normal;
+}
+
+/* ─── CHAPTER 3 — DEPORTE ─────────────────────────────────────── */
+#ch3 {
+  background: var(--cream);
+  color: var(--ink);
+  flex-direction: column;
+  padding: 8rem 0;
+}
+
+.sport-layout {
+  width: 90%;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.sport-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 5rem;
+  padding-bottom: 2.5rem;
+  border-bottom: 1px solid var(--dust);
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+
+.sport-header-left {}
+
+.sport-header h2 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(3rem, 6vw, 5.5rem);
+  line-height: 0.95;
+  color: var(--ink);
+}
+
+.sport-header h2 .moss-word { color: var(--moss); }
+
+.sport-header-right {
+  max-width: 380px;
+  font-size: 1.05rem;
+  line-height: 1.75;
+  color: #3a3a3a;
+  font-style: italic;
+}
+
+.sport-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.sport-card {
+  background: var(--ink);
+  color: var(--paper);
+  padding: 2.5rem 2rem;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.4s ease;
+}
+
+.sport-card:hover { transform: translateY(-6px); }
+
+.sport-card::before {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 4px;
+  background: var(--fire);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s ease;
+}
+
+.sport-card:hover::before { transform: scaleX(1); }
+
+.sport-card:nth-child(2) { background: var(--moss); margin-top: 2.5rem; }
+.sport-card:nth-child(3) { margin-top: 5rem; }
+
+.card-icon {
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  opacity: 0.9;
+}
+
+.card-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 4rem;
+  line-height: 1;
+  color: var(--fire);
+  margin-bottom: 0.5rem;
+}
+
+.sport-card:nth-child(2) .card-num { color: var(--gold); }
+
+.card-title {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+  color: var(--dust);
+}
+
+.card-body {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: var(--dust);
+}
+
+/* ─── CHAPTER 4 — VOCES ───────────────────────────────────────── */
+#ch4 {
+  background: var(--sky);
+  flex-direction: column;
+  padding: 8rem 0;
+}
+
+.voices-layout {
+  width: 90%;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.voices-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  color: var(--paper);
+  margin-bottom: 4rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid rgba(255,255,255,0.15);
+}
+
+.voices-title span { color: var(--gold); }
+
+.testimonials {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2.5rem;
+}
+
+.testimonial {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 2.5rem;
+  position: relative;
+  transition: background 0.3s;
+}
+
+.testimonial:hover { background: rgba(255,255,255,0.1); }
+
+.testimonial:nth-child(1) { border-left: 3px solid var(--fire); }
+.testimonial:nth-child(2) { border-left: 3px solid var(--gold); margin-top: 2rem; }
+.testimonial:nth-child(3) { border-left: 3px solid var(--moss); margin-top: -1rem; }
+
+.quote-mark {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 5rem;
+  line-height: 0.8;
+  color: var(--fire);
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.testimonial:nth-child(2) .quote-mark { color: var(--gold); }
+.testimonial:nth-child(3) .quote-mark { color: var(--moss); }
+
+.testimonial-text {
+  font-family: 'Crimson Pro', serif;
+  font-style: italic;
+  font-size: clamp(1.05rem, 1.6vw, 1.25rem);
+  line-height: 1.7;
+  color: var(--paper);
+  margin-bottom: 1.5rem;
+}
+
+.testimonial-author {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.5);
+}
+
+.testimonial-author strong {
+  color: var(--paper);
+  display: block;
+  font-size: 0.7rem;
+  margin-bottom: 0.2rem;
+}
+
+/* ─── CHAPTER 5 — LLAMADO ─────────────────────────────────────── */
+#ch5 {
+  background: var(--ink);
+  flex-direction: column;
+  justify-content: center;
+  padding: 8rem 2rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Animated background circle */
+#ch5::before {
+  content: '';
+  position: absolute;
+  width: 80vmax;
+  height: 80vmax;
+  border-radius: 50%;
+  border: 1px solid rgba(200,82,42,0.08);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  animation: slowSpin 40s linear infinite;
+}
+
+#ch5::after {
+  content: '';
+  position: absolute;
+  width: 50vmax;
+  height: 50vmax;
+  border-radius: 50%;
+  border: 1px solid rgba(200,82,42,0.12);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  animation: slowSpin 25s linear infinite reverse;
+}
+
+.cta-eyebrow {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--fire);
+  margin-bottom: 2rem;
+  position: relative;
+  z-index: 2;
+}
+
+.cta-headline {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(3.5rem, 9vw, 8rem);
+  line-height: 0.95;
+  color: var(--paper);
+  max-width: 900px;
+  margin: 0 auto 1.5rem;
+  position: relative;
+  z-index: 2;
+}
+
+.cta-headline span { color: var(--fire); }
+
+.cta-sub {
+  font-family: 'Crimson Pro', serif;
+  font-style: italic;
+  font-size: clamp(1.1rem, 2vw, 1.4rem);
+  color: var(--dust);
+  max-width: 540px;
+  margin: 0 auto 4rem;
+  line-height: 1.65;
+  position: relative;
+  z-index: 2;
+}
+
+.cta-buttons {
+  display: flex;
+  gap: 1.2rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 2;
+}
+
+.btn-primary {
+  display: inline-block;
+  padding: 1rem 2.5rem;
+  background: var(--fire);
+  color: var(--paper);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border: 2px solid var(--fire);
+  cursor: pointer;
+  transition: background 0.3s, color 0.3s;
+}
+
+.btn-primary:hover {
+  background: transparent;
+  color: var(--fire);
+}
+
+.btn-ghost {
+  display: inline-block;
+  padding: 1rem 2.5rem;
+  background: transparent;
+  color: var(--paper);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border: 2px solid rgba(255,255,255,0.25);
+  cursor: pointer;
+  transition: border-color 0.3s, color 0.3s;
+}
+
+.btn-ghost:hover {
+  border-color: var(--paper);
+}
+
+/* ─── FOOTER ──────────────────────────────────────────────────── */
+footer {
+  background: #080B0F;
+  padding: 3rem 8%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+
+.footer-brand {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.4rem;
+  color: var(--paper);
+  letter-spacing: 0.1em;
+}
+
+.footer-brand span { color: var(--fire); }
+
+.footer-copy {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  color: rgba(255,255,255,0.25);
+  text-transform: uppercase;
+}
+
+.footer-links {
+  display: flex;
+  gap: 2rem;
+  list-style: none;
+}
+
+.footer-links a {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.footer-links a:hover { color: var(--fire); }
+
+/* ─── SCROLL REVEAL ───────────────────────────────────────────── */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.9s ease, transform 0.9s ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-40px);
+  transition: opacity 0.9s ease, transform 0.9s ease;
+}
+
+.reveal-left.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.reveal-right {
+  opacity: 0;
+  transform: translateX(40px);
+  transition: opacity 0.9s ease, transform 0.9s ease;
+}
+
+.reveal-right.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Stagger delays */
+.delay-1 { transition-delay: 0.1s; }
+.delay-2 { transition-delay: 0.2s; }
+.delay-3 { transition-delay: 0.35s; }
+.delay-4 { transition-delay: 0.5s; }
+.delay-5 { transition-delay: 0.65s; }
+.delay-6 { transition-delay: 0.8s; }
+
+/* ─── KEYFRAMES ───────────────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scrollPulse {
+  0%   { opacity: 1; transform: scaleY(1); }
+  50%  { opacity: 0.3; transform: scaleY(0.6); }
+  100% { opacity: 1; transform: scaleY(1); }
+}
+
+@keyframes slowSpin {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to   { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* ─── RESPONSIVE ──────────────────────────────────────────────── */
+@media (max-width: 860px) {
+  nav { padding: 1rem 1.5rem; }
+  .nav-links { display: none; }
+  #chapter-track { display: none; }
+
+  .context-grid { grid-template-columns: 1fr; gap: 2rem; }
+  .context-chapter-num { font-size: 6rem; }
+
+  .conflict-body { grid-template-columns: 1fr; }
+
+  .sport-cards { grid-template-columns: 1fr; }
+  .sport-card:nth-child(2),
+  .sport-card:nth-child(3) { margin-top: 0; }
+
+  .testimonials { grid-template-columns: 1fr; }
+  .testimonial:nth-child(2),
+  .testimonial:nth-child(3) { margin-top: 0; }
+
+  footer { flex-direction: column; text-align: center; }
+  .footer-links { justify-content: center; }
+}
+
+</style>
+</head>
+<body>
+
+<!-- Progress Bar -->
+<div id="progress-bar"></div>
+
+<!-- Navigation -->
+<nav>
+  <div class="nav-logo">Resiliencia en Juego</div>
+  <ul class="nav-links">
+    <li><a href="#ch1">Contexto</a></li>
+    <li><a href="#ch2">Conflicto</a></li>
+    <li><a href="#ch3">Deporte</a></li>
+    <li><a href="#ch4">Voces</a></li>
+    <li><a href="#ch5">Acción</a></li>
+  </ul>
+</nav>
+
+<!-- Chapter Track -->
+<div id="chapter-track">
+  <div class="chapter-pip active" data-target="ch0">
+    <span class="pip-label">Portada</span>
+    <span class="pip-dot"></span>
+  </div>
+  <div class="chapter-pip" data-target="ch1">
+    <span class="pip-label">Contexto</span>
+    <span class="pip-dot"></span>
+  </div>
+  <div class="chapter-pip" data-target="ch2">
+    <span class="pip-label">Conflicto</span>
+    <span class="pip-dot"></span>
+  </div>
+  <div class="chapter-pip" data-target="ch3">
+    <span class="pip-label">Deporte</span>
+    <span class="pip-dot"></span>
+  </div>
+  <div class="chapter-pip" data-target="ch4">
+    <span class="pip-label">Voces</span>
+    <span class="pip-dot"></span>
+  </div>
+  <div class="chapter-pip" data-target="ch5">
+    <span class="pip-label">Acción</span>
+    <span class="pip-dot"></span>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════ -->
+<!--  CHAPTER 0 — PORTADA                          -->
+<!-- ══════════════════════════════════════════════ -->
+<section class="chapter" id="ch0">
+  <div class="bg-num" aria-hidden="true">0</div>
+
+  <p class="hero-eyebrow">Oriente Antioqueño · Colombia · 2024</p>
+
+  <h1 class="hero-headline">
+    RESILIENCIA<br>
+    <span>EN JUEGO</span>
+  </h1>
+
+  <p class="hero-sub">
+    Una narrativa sobre el asfalto, la sombra del microtráfico<br>
+    y la cancha que devuelve el futuro a la juventud del Oriente antioqueño.
+  </p>
+
+  <div class="scroll-cue" aria-label="Desplaza para navegar">
+    <span>Desliza</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════ -->
+<!--  CHAPTER 1 — CONTEXTO                         -->
+<!-- ══════════════════════════════════════════════ -->
+<section class="chapter" id="ch1">
+  <div class="context-grid">
+    <div class="reveal-left">
+      <p class="context-label">Capítulo I</p>
+      <div class="context-chapter-num" aria-hidden="true">01</div>
+    </div>
+    <div class="context-body">
+      <h2 class="context-title reveal">El Territorio<br>y Sus Heridas</h2>
+      <div class="reveal delay-1">
+        <p>
+          El <strong>Oriente Antioqueño</strong> alberga más de 23 municipios que van desde el altiplano hasta las selvas del Magdalena Medio. Una región de una belleza que contrasta profundamente con las cicatrices que décadas de conflicto dejaron en su tejido social.
+        </p>
+        <p>
+          La salida de actores armados mayores no significó la paz: en su lugar, <strong>estructuras menores de microtráfico</strong> se instalaron en barrios periféricos, ofreciendo a jóvenes entre 12 y 25 años una promesa rápida de dinero, identidad y pertenencia.
+        </p>
+        <p>
+          La pregunta que organiza esta historia es simple y urgente: <em>¿qué puede hacer el deporte cuando el Estado llega tarde?</em>
+        </p>
+      </div>
+
+      <div class="stat-row reveal delay-2">
+        <div class="stat-item">
+          <div class="stat-num">+23</div>
+          <div class="stat-desc">Municipios en la subregión</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">68%</div>
+          <div class="stat-desc">Jóvenes en riesgo de reclutamiento</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">12</div>
+          <div class="stat-desc">Años, edad mínima de captación</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════ -->
+<!--  CHAPTER 2 — CONFLICTO                        -->
+<!-- ══════════════════════════════════════════════ -->
+<section class="chapter" id="ch2">
+
+  <div class="conflict-hero">
+    <div class="conflict-img-bg"></div>
+    <div class="conflict-gradient"></div>
+    <div class="conflict-hero-text reveal">
+      <h2>El Laberinto del<br><em>Microtráfico</em></h2>
+    </div>
+  </div>
+
+  <div class="conflict-body">
+    <div class="conflict-col reveal delay-1">
+      <p>
+        En las esquinas de los municipios del Oriente, el silencio se compra y la lealtad se recluta. <strong>Las redes del microtráfico no operan con violencia visible todo el tiempo</strong>: se infiltran en el lenguaje, en la moda, en la música, en la oferta de un celular nuevo a cambio de un favor pequeño.
+      </p>
+      <p>
+        Los jóvenes más vulnerables son aquellos sin referentes adultos estables, sin acceso a oportunidades educativas o deportivas, y con una fuerte necesidad de <strong>reconocimiento social</strong>. El crimen organizado conoce este mapa emocional y lo explota con precisión.
+      </p>
+      <div class="pull-quote">
+        <blockquote>
+          "No me ofrecieron trabajo. Me ofrecieron respeto. Eso valía más en ese momento."
+        </blockquote>
+        <cite>— Joven reintegrado, El Santuario</cite>
+      </div>
+    </div>
+
+    <div class="conflict-col reveal delay-3">
+      <p>
+        El entorno se convierte en el primer victimario. <strong>La violencia no es solo un acto, es un clima.</strong> Una atmósfera de amenaza permanente que normaliza la ilegalidad como única vía de ascenso.
+      </p>
+      <p>
+        Según organizaciones locales, entre 2019 y 2023 el número de menores vinculados a estructuras delictivas en el Oriente creció de forma sostenida, acelerándose durante y después de la pandemia, cuando los espacios de contención social —escuelas, clubes deportivos, programas culturales— cerraron sus puertas.
+      </p>
+      <p>
+        <strong>La pandemia fue la grieta perfecta</strong> por la que el microtráfico amplió su territorio sin disparar un solo tiro.
+      </p>
+    </div>
+  </div>
+
+</section>
+
+
+<!-- ══════════════════════════════════════════════ -->
+<!--  CHAPTER 3 — DEPORTE COMO REFUGIO             -->
+<!-- ══════════════════════════════════════════════ -->
+<section class="chapter" id="ch3">
+  <div class="sport-layout">
+
+    <div class="sport-header">
+      <div class="sport-header-left reveal-left">
+        <p class="context-label">Capítulo III</p>
+        <h2>La Cancha<br>como <span class="moss-word">Refugio</span></h2>
+      </div>
+      <div class="sport-header-right reveal-right delay-2">
+        Donde antes había miedo, hoy hay competencia sana. El deporte se levanta como muralla frente a la delincuencia. El balón se convierte en la única herramienta capaz de unir barrios divididos por líneas invisibles.
+      </div>
+    </div>
+
+    <div class="sport-cards">
+      <div class="sport-card reveal delay-1">
+        <div class="card-icon">⚽</div>
+        <div class="card-num">1.200+</div>
+        <div class="card-title">Jóvenes en programas</div>
+        <div class="card-body">Vinculados a ligas y escuelas de formación deportiva en 8 municipios del Oriente, alejados activamente de redes de microtráfico.</div>
+      </div>
+
+      <div class="sport-card reveal delay-2">
+        <div class="card-icon">🏃</div>
+        <div class="card-num">34</div>
+        <div class="card-title">Escenarios rehabilitados</div>
+        <div class="card-body">Canchas, polideportivos y parques recuperados para la comunidad con la participación de líderes deportivos y juntas de acción comunal.</div>
+      </div>
+
+      <div class="sport-card reveal delay-3">
+        <div class="card-icon">🏆</div>
+        <div class="card-num">87%</div>
+        <div class="card-title">Permanencia escolar</div>
+        <div class="card-body">De los jóvenes vinculados a programas deportivos continúan en el sistema educativo, frente al 54% de la población general en las mismas zonas.</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════ -->
+<!--  CHAPTER 4 — VOCES DEL TERRITORIO             -->
+<!-- ══════════════════════════════════════════════ -->
+<section class="chapter" id="ch4">
+  <div class="voices-layout">
+
+    <h2 class="voices-title reveal">
+      Voces del <span>Territorio</span>
+    </h2>
+
+    <div class="testimonials">
+
+      <div class="testimonial reveal delay-1">
+        <div class="quote-mark">"</div>
+        <p class="testimonial-text">
+          Cuando empecé a entrenar, ya me habían ofrecido trabajar en una esquina. El profe me dijo que si llegaba al torneo departamental, me conseguía una beca. Llegué. Y aquí estoy, en Medellín, estudiando.
+        </p>
+        <div class="testimonial-author">
+          <strong>Sebastián G., 19 años</strong>
+          Municipio de Rionegro
+        </div>
+      </div>
+
+      <div class="testimonial reveal delay-2">
+        <div class="quote-mark">"</div>
+        <p class="testimonial-text">
+          El deporte no es un programa social. Es una identidad. Cuando un chico se siente futbolista, ya no tiene espacio mental para ser otra cosa. Eso es lo que no entienden los que diseñan políticas desde las oficinas.
+        </p>
+        <div class="testimonial-author">
+          <strong>Lucía Montoya</strong>
+          Entrenadora, Escuela de Fútbol Oriente Unido
+        </div>
+      </div>
+
+      <div class="testimonial reveal delay-3">
+        <div class="quote-mark">"</div>
+        <p class="testimonial-text">
+          Nosotros recuperamos la cancha del barrio con recursos propios. Tres meses limpiando, pintando, arreglando el piso. El día que inauguramos, lloré. Porque ese espacio fue nuestro primero antes de que los grupos lo tomaran.
+        </p>
+        <div class="testimonial-author">
+          <strong>Jairo Betancur</strong>
+          Líder Comunal, Municipio de La Ceja
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════ -->
+<!--  CHAPTER 5 — LLAMADO A LA ACCIÓN              -->
+<!-- ══════════════════════════════════════════════ -->
+<section class="chapter" id="ch5">
+
+  <p class="cta-eyebrow reveal">El futuro se construye ahora</p>
+
+  <h2 class="cta-headline reveal delay-1">
+    RESCATEMOS<br>EL <span>MAÑANA</span>
+  </h2>
+
+  <p class="cta-sub reveal delay-2">
+    Cada cancha recuperada, cada joven formado, cada entrenadora apoyada es un acto de resistencia colectiva. La resiliencia no es pasiva: se organiza, se financia, se pelea.
+  </p>
+
+  <div class="cta-buttons reveal delay-3">
+    <a href="#" class="btn-primary">Ver proyectos deportivos</a>
+    <a href="#" class="btn-ghost">Compartir esta historia</a>
+  </div>
+
+</section>
+
+
+<!-- ══════════════════════════════════════════════ -->
+<!--  FOOTER                                       -->
+<!-- ══════════════════════════════════════════════ -->
+<footer>
+  <div class="footer-brand">RESILIENCIA<span>.</span>JUEGO</div>
+  <ul class="footer-links">
+    <li><a href="#">Metodología</a></li>
+    <li><a href="#">Fuentes</a></li>
+    <li><a href="#">Contacto</a></li>
+    <li><a href="#">Aliados</a></li>
+  </ul>
+  <p class="footer-copy">© 2024 · Oriente Antioqueño · Colombia</p>
+</footer>
+
+
+<!-- ─── JAVASCRIPT ─────────────────────────────────────────────── -->
+<script>
+(function () {
+  'use strict';
+
+  /* ── 1. Progress bar ─────────────────────────────────────── */
+  const progressBar = document.getElementById('progress-bar');
+
+  function updateProgress () {
+    const scrollTop    = window.scrollY;
+    const docHeight    = document.documentElement.scrollHeight - window.innerHeight;
+    const pct          = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    progressBar.style.width = pct.toFixed(1) + '%';
+  }
+
+  /* ── 2. Scroll Reveal (IntersectionObserver) ─────────────── */
+  const revealEls = document.querySelectorAll('.reveal, .reveal-left, .reveal-right');
+
+  const revealObserver = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+
+  revealEls.forEach(function (el) { revealObserver.observe(el); });
+
+  /* ── 3. Active chapter tracking (nav dots) ───────────────── */
+  const chapters = document.querySelectorAll('.chapter');
+  const pips     = document.querySelectorAll('.chapter-pip');
+
+  const chapterObserver = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        pips.forEach(function (pip) {
+          pip.classList.toggle('active', pip.dataset.target === id);
+        });
+      }
+    });
+  }, { threshold: 0.4 });
+
+  chapters.forEach(function (ch) { chapterObserver.observe(ch); });
+
+  /* ── 4. Pip click → smooth scroll ───────────────────────── */
+  pips.forEach(function (pip) {
+    pip.addEventListener('click', function () {
+      const target = document.getElementById(pip.dataset.target);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+
+  /* ── 5. Scroll event listener ────────────────────────────── */
+  window.addEventListener('scroll', updateProgress, { passive: true });
+
+  /* Initial call */
+  updateProgress();
+
+})();
+</script>
+
+</body>
+</html>
